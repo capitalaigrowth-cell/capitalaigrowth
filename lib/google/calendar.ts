@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { addMinutes, addHours, startOfHour, isWeekend, format } from "date-fns";
-import { toZonedTime, fromZonedTime } from "date-fns-tz";
+import { toZonedTime } from "date-fns-tz";
 import { getGoogleAuth } from "./auth";
 import { getEnv } from "@/lib/env";
 import { logger, withRetry } from "@/lib/logger";

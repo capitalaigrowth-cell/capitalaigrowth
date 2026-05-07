@@ -40,7 +40,7 @@ export async function detectLanguage(
     async () => {
       const client = getClient();
       const response = await client.messages.create({
-        model: "claude-sonnet-4-5",
+        model: "claude-sonnet-4-6",
         max_tokens: 10,
         messages: [
           {
@@ -51,7 +51,7 @@ export async function detectLanguage(
       });
 
       const raw = response.content[0];
-      if (raw.type !== "text") return "en";
+      if (!raw || raw.type !== "text") return "en";
       const detected = raw.text.trim().toLowerCase();
       if (detected === "es") return "es";
       if (detected === "pt") return "pt";
@@ -96,14 +96,14 @@ TRANSCRIPT:
 ${transcript}`;
 
       const response = await client.messages.create({
-        model: "claude-sonnet-4-5",
+        model: "claude-sonnet-4-6",
         max_tokens: 500,
         system: systemPrompt,
         messages: [{ role: "user", content: userPrompt }],
       });
 
       const raw = response.content[0];
-      if (raw.type !== "text") {
+      if (!raw || raw.type !== "text") {
         throw new Error("Unexpected response type from Anthropic");
       }
 

@@ -40,7 +40,7 @@ function buildAssistantConfig(env: ReturnType<typeof getEnv>) {
     name: "Capital AI Growth — Lead Qualifier",
     model: {
       provider: "anthropic",
-      model: "claude-sonnet-4-5",
+      model: "claude-sonnet-4-6",
       systemPrompt: `You are a friendly AI assistant for Capital AI Growth, Andy Young's AI automation consulting business based in Queensland, Australia.
 
 Your ONLY job: have a warm, brief qualification conversation and book the caller for a 30-minute strategy call with Andy.
