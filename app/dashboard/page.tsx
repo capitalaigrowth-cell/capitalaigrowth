@@ -1,6 +1,5 @@
 import { createSessionClient, createServiceClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { getEnv } from "@/lib/env";
 import type { Lead } from "@/types";
 import DashboardClient from "./dashboard-client";
 
@@ -17,7 +16,6 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const env = getEnv();
   const db = createServiceClient();
 
   // Fetch recent leads
@@ -65,7 +63,7 @@ export default async function DashboardPage() {
         bookedThisWeek: bookedThisWeek ?? 0,
         conversionRate,
         totalLeads: totalLeads ?? 0,
-        appUrl: env.APP_URL,
+        appUrl: process.env["APP_URL"] ?? "",
       }}
     />
   );
