@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { Lead } from "@/types";
+import type { Lead, LeadStatus } from "@/types";
 
 // ============================================================
 // Dashboard client component
@@ -285,7 +285,7 @@ function LeadDetail({
   const [status, setStatus] = useState(lead.status);
 
   const handleStatusChange = useCallback(
-    async (newStatus: string) => {
+    async (newStatus: LeadStatus) => {
       setSaving(true);
       try {
         const res = await fetch(`/api/leads/${lead.id}`, {
@@ -413,7 +413,7 @@ function LeadDetail({
             ].map(({ value, label }) => (
               <button
                 key={value}
-                onClick={() => handleStatusChange(value)}
+                onClick={() => handleStatusChange(value as LeadStatus)}
                 disabled={saving || status === value}
                 style={{
                   padding: "6px 14px",
