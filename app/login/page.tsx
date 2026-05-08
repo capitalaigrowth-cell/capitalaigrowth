@@ -1,46 +1,35 @@
 "use client";
-// v2
+
 import { useState } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
-  const supabaseKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
-  const missingConfig = !supabaseUrl || !supabaseKey;
-
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (missingConfig) {
-      setError("Supabase environment variables are not configured. Please check Vercel settings.");
-      return;
-    }
     setLoading(true);
     setError("");
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
       });
 
-      if (authError) {
-        setError(authError.message);
-        setLoading(false);
-      } else {
+      if (res.ok) {
         router.push("/dashboard");
         router.refresh();
+      } else {
+        setError("Wrong password — try again.");
+        setLoading(false);
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Unexpected error — check browser console";
-      setError(message);
+    } catch {
+      setError("Could not connect — try again.");
       setLoading(false);
     }
   }
@@ -63,45 +52,7 @@ export default function LoginPage() {
           Lead System
         </p>
 
-        {missingConfig && (
-          <div
-            style={{
-              marginBottom: 16,
-              padding: "10px 14px",
-              background: "rgba(239,68,68,0.1)",
-              borderRadius: "var(--radius)",
-              border: "1px solid rgba(239,68,68,0.3)",
-            }}
-          >
-            <p style={{ margin: 0, fontSize: 12, color: "var(--color-danger)", fontWeight: 600 }}>
-              Configuration missing
-            </p>
-            <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--color-danger)" }}>
-              NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in Vercel
-              environment variables, then redeployed.
-            </p>
-          </div>
-        )}
-
         <form onSubmit={handleLogin}>
-          <div style={{ marginBottom: 12 }}>
-            <label
-              htmlFor="email"
-              style={{ display: "block", marginBottom: 6, fontSize: 12, color: "var(--color-muted)" }}
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="andy@capitalaigrowth.com.au"
-              required
-              autoFocus
-            />
-          </div>
-
           <div style={{ marginBottom: 20 }}>
             <label
               htmlFor="password"
@@ -116,6 +67,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              autoFocus
             />
           </div>
 
@@ -129,19 +81,14 @@ export default function LoginPage() {
                 border: "1px solid rgba(239,68,68,0.3)",
               }}
             >
-              <p style={{ margin: 0, color: "var(--color-danger)", fontSize: 13, fontWeight: 600 }}>
-                Login failed
-              </p>
-              <p style={{ margin: "4px 0 0", color: "var(--color-danger)", fontSize: 12 }}>
-                {error}
-              </p>
+              <p style={{ margin: 0, color: "var(--color-danger)", fontSize: 13 }}>{error}</p>
             </div>
           )}
 
           <button
             type="submit"
             className="btn-primary"
-            disabled={loading || missingConfig}
+            disabled={loading}
             style={{ width: "100%", justifyContent: "center" }}
           >
             {loading ? "Signing in…" : "Sign in"}
