@@ -1,22 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const adminPassword = process.env["ADMIN_PASSWORD"];
-  const authCookie = request.cookies.get("auth")?.value;
-  const isAuthed = adminPassword && authCookie === adminPassword;
-
-  if (!isAuthed && request.nextUrl.pathname.startsWith("/dashboard")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-
-  if (isAuthed && request.nextUrl.pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
-
+  // No auth required — URL is private
   return NextResponse.next({ request });
 }
 
