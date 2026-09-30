@@ -1,6 +1,6 @@
 import {NextRequest,NextResponse} from "next/server";
 import {createServiceClient,createSessionClient} from "@/lib/supabase/server";
-import {initiateVapiCall,processBooking} from "@/lib/leads/pipeline";
+import {processBooking} from "@/lib/leads/pipeline";
 import {sendSms} from "@/lib/twilio/client";
 
 async function leadForUser(id:string){
@@ -16,7 +16,14 @@ export async function POST(req:NextRequest,{params}:{params:Promise<{id:string}>
  if(action==="call_anna"){
   if(body.consent_to_call!==true)return NextResponse.json({error:"Explicit call consent is required"},{status:400});
   if(!ctx.lead.phone)return NextResponse.json({error:"Lead has no phone number"},{status:400});
-  await initiateVapiCall(ctx.lead); return NextResponse.json({success:true,status:"Call initiated"});
+  const hook=process.env.MAKE_G6_MASTER_WEBHOOK;
+  if(!hook)return NextResponse.json({error:"Master G6 call route is not configured"},{status:503});
+  const upstream=await fetch(hook,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+   flow:"new_lead",name:ctx.lead.name||"New YIS Lead",email:ctx.lead.email,phone:ctx.lead.phone,
+   company:ctx.lead.business||"",source:"G6 Master Control Room",offer:"G6",language:"English",consent_to_call:true
+  })});
+  if(!upstream.ok)return NextResponse.json({error:"Master G6 rejected the call request"},{status:502});
+  return NextResponse.json({success:true,status:"Anna call initiated via Retell / Master G6"});
  }
  if(action==="sms"){
   if(body.confirm!==true)return NextResponse.json({error:"Confirmation required before sending"},{status:400});
